@@ -20,6 +20,11 @@ worker.onmessage = function (msg) {
     if(msg.error) {
       throw("ErrorMarker");
     }
+
+    if(msg.exitCode) {
+      process.exit(msg.exitCode);
+      return;
+    }
     
     msg.output = msg.input * 3;
     setTimeout(function () {
