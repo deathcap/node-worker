@@ -1,18 +1,18 @@
 var common = require("./common");
 var sys    = require("sys");
 var assert = require('assert');
- 
+
 var Worker = require("../lib/worker").Worker;
- 
+
 process.ENV["NODE_PATH"] = common.libDir;
- 
+
 function makeWorker (filename) {
   return new Worker(__dirname+"/fixtures/"+filename);
 }
 
 // basic test
 var worker = makeWorker("worker.js");
- 
+
 worker.onmessage = function (msg) {
   if (msg.input) {
     assert.ok(msg.output == msg.input * 3, "We can multiply asyncly");
@@ -21,7 +21,7 @@ worker.onmessage = function (msg) {
     }
   }
 };
- 
+
 worker.postMessage({
   input: 1
 });
@@ -38,7 +38,7 @@ worker.postMessage({
 // error handling
 setTimeout(function () {
   setTimeout(function () {
-    
+
     var w2 = makeWorker("worker.js");
     w2.postMessage({
       error: true
@@ -51,7 +51,7 @@ setTimeout(function () {
       assert.ok(false, "Wanted an error, but got a message");
       w2.terminate();
     });
-    
+
     var w3 = makeWorker("worker.js");
     w3.postMessage({
       error: true
@@ -64,7 +64,7 @@ setTimeout(function () {
       assert.ok(false, "Wanted an error, but got a message");
       w3.terminate();
     });
-    
+
   }, 10);
 }, 10);
 
@@ -112,4 +112,27 @@ waitWorker.postMessage({
 waitWorker.addListener("message", function () {
   assert.ok(true, "Worker response can be async.")
   waitWorker.terminate();
+});
+
+// Test workers raise "close" event when they exit
+var workersClosed = 0;
+var exitWorker = makeWorker('worker.js');
+exitWorker.postMessage({
+  exitCode: 1,
+});
+exitWorker.addListener('close', function(code) {
+  assert.ok(code === 1, 'Exited worker returns exit code');
+  ++workersClosed;
+});
+
+// Test that when a worker raises a syntax error, it raises a close event
+var exitWorker = makeWorker('syntax-error-worker.js');
+exitWorker.onerror = function() { };
+exitWorker.addListener('close', function(code) {
+  assert.ok(true, 'Worker with syntax error raises close event');
+  ++workersClosed;
+});
+
+process.addListener('exit', function () {
+  assert.ok(workersClosed == 2, "Exited workers raise 'close' event");
 });

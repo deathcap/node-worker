@@ -16,3 +16,7 @@ worker.addListener("message", function (msg) {
   sys.puts(msg.hello);
   worker.terminate();
 });
+
+worker.addListener('close', function(code) {
+  sys.puts('Worker exited with exit code ' + code);
+});

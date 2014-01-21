@@ -22,6 +22,11 @@ http://www.whatwg.org/specs/web-workers/current-work/
       worker.terminate();
     });
 
+    // Optional, if you want to be notified when a worker child exits
+    worker.addListener('close', function(code) {
+	  sys.puts('Worker exited with exit code ' + code);
+    });
+
 ## Example Worker File
 
     var worker = require("worker").worker;
