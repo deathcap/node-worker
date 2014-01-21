@@ -2,7 +2,7 @@ var sys = require("sys");
 
 var Worker = require("../lib/worker").Worker;
 
-var worker = new Worker("worker.js");
+var worker = new Worker("./worker.js");
 
 worker.postMessage({
   hello: "world"
